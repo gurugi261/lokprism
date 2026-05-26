@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChromaSearch - Color-Based Image Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#00a572",
+                        "on-primary-container": "#00285d",
+                        "on-tertiary-container": "#461f00",
+                        "on-surface": "#dae2fd",
+                        "surface-container-low": "#131b2e",
+                        "tertiary": "#ffb786",
+                        "surface-container-lowest": "#060e20",
+                        "on-secondary": "#003824",
+                        "inverse-primary": "#005ac2",
+                        "tertiary-container": "#df7412",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dae2fd",
+                        "outline-variant": "#424754",
+                        "on-tertiary-fixed": "#311400",
+                        "on-background": "#dae2fd",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-tint": "#adc6ff",
+                        "primary-container": "#4d8eff",
+                        "surface": "#0b1326",
+                        "primary": "#adc6ff",
+                        "secondary": "#4edea3",
+                        "surface-container-highest": "#2d3449",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-variant": "#2d3449",
+                        "surface-container": "#171f33",
+                        "surface-dim": "#0b1326",
+                        "secondary-fixed-dim": "#4edea3",
+                        "outline": "#8c909f",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary-fixed": "#001a42",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-tertiary": "#502400",
+                        "surface-container-high": "#222a3d",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary-container": "#00311f",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0b1326",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "on-primary": "#002e6a",
+                        "inverse-on-surface": "#283044",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-bright": "#31394d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "header-height": "64px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "sidebar-width": "320px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "label-mono": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-mono": ["11px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-sm": ["12px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["30px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .ambient-shadow:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .glass-panel { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface text-primary dark:text-primary flex justify-between items-center h-header-height px-margin-desktop w-full glass-panel sticky top-0 z-50 border-b border-outline-variant flat no shadows">
+<div class="flex items-center gap-4">
+<span class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">ChromaSearch</span>
+<div class="relative hidden md:flex items-center ml-8 bg-surface-container-high border border-outline-variant rounded focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant ml-3 text-[18px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md text-on-surface placeholder-on-surface-variant py-2 pl-2 w-[300px]" placeholder="Search by color or keyword..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-gutter">
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="contrast">contrast</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden relative">
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col h-[calc(100vh-64px)] overflow-y-auto">
+<!-- Tool Bar (Color Selection & Sorting) -->
+<div class="sticky top-0 z-40 bg-surface/90 glass-panel border-b border-outline-variant p-gutter flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<!-- Color Inputs -->
+<div class="flex items-center gap-4 flex-wrap">
+<div class="flex items-center gap-2 bg-surface-container-high border border-outline-variant rounded p-1">
+<div class="w-6 h-6 rounded-sm bg-[#ff5733] border border-outline-variant"></div>
+<input class="bg-transparent border-none focus:ring-0 font-label-mono text-label-mono text-on-surface w-20 py-1 px-2" type="text" value="#FF5733"/>
+<button class="p-1 text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">close</span></button>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-high border border-outline-variant rounded p-1">
+<div class="w-6 h-6 rounded-sm bg-[#33c1ff] border border-outline-variant"></div>
+<input class="bg-transparent border-none focus:ring-0 font-label-mono text-label-mono text-on-surface w-[120px] py-1 px-2" type="text" value="RGB(51, 193, 255)"/>
+<button class="p-1 text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">close</span></button>
+</div>
+<button class="flex items-center justify-center w-8 h-8 rounded border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary transition-colors bg-surface-container-high">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<!-- Sorting -->
+<div class="flex items-center gap-3">
+<span class="font-label-mono text-label-mono text-on-surface-variant uppercase">Sort By:</span>
+<select class="bg-surface-container-high border border-outline-variant rounded text-body-sm text-on-surface py-1 pl-2 pr-8 focus:border-primary focus:ring-0 cursor-pointer">
+<option>Match %</option>
+<option>Newest</option>
+<option>Popular</option>
+</select>
+</div>
+</div>
+<!-- Results Grid -->
+<div class="p-margin-desktop grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter auto-rows-max">
+<!-- Card 1 -->
+<div class="group relative bg-surface-container border border-outline-variant rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200 hover:border-primary">
+<div class="relative w-full aspect-[4/3] bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" data-alt="A striking abstract digital art piece featuring flowing, liquid-like waves of vibrant orange and cyan blue colors mixing together. The textures are smooth and glossy, creating a modern, high-tech aesthetic. The lighting is dramatic and studio-like, highlighting the rich saturation of the hues against a deep, dark background. The overall mood is energetic and visually captivating, perfectly aligning with a premium color-search tool's technical precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG6kX20zRCdOopTGGiyb9LWd_mnghLQ4N7NvMl9sLBhXancgSCxGHoGjxjsZyFcS5QDoM11ej-h83NrEmRHprW2YQrlRZdFGb7jimUzk_GCkb86g1f4H-0NlwmUCBckqK05PcPTQI9yu7z7ZIWCgUevtTpZwjHJTa6AZYCao9kG6DsQ2rc_8bkNxY4yCdAvNY_E5JiPoK0UrjjODlsgrVHWeuHo-nbgMn483c4qesFHqvDqrIrBPWgDfEfEQ2GeyVPEnvYe9nJGlhM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 92%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">bookmark_border</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-2 w-full">
+<div class="bg-[#ff5733] h-full" style="width: 60%"></div>
+<div class="bg-[#33c1ff] h-full" style="width: 30%"></div>
+<div class="bg-[#111111] h-full" style="width: 10%"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative bg-surface-container border border-primary border-[2px] rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200">
+<div class="relative w-full aspect-[3/4] bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" data-alt="A minimalist architectural detail photograph showing overlapping geometric planes of concrete and glass. The scene is illuminated by harsh, angular sunlight casting deep, sharp shadows, creating a high-contrast monochromatic base. A single, bold streak of neon orange light cuts across the composition. The style is strictly technical and modern, emphasizing form, texture, and precise color application within a dark, sophisticated environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGvwWBrJpKbvkb_DRflE-tuO8JLXhFcN7kPlqJbv5aF1qvlas5JoAVAU2yO_d33hUMmGWVOBiz4NiQPk2qOsaVRj4tkVH5W57joV5v0BbnkWKUhlNA1VKGfggn01uppSP8IL6vdH0bM-qdd-M9aGFgOvMrNJlGVOvIrYFTJzCEdYVldHTGmoRtZvuLrdOUds9u6M9CE6-2E4KFjV1R8Dunrmg77b5VYf4vW0EBzuGOyuv3Ezj8jQ5Vtpew4wEcgFQpkZXTfJtTbdDA"/>
+<div class="absolute top-2 left-2 bg-primary text-on-primary font-label-mono text-label-mono px-2 py-1 rounded-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check</span> Selected
+                        </div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 88%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">bookmark</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-2 w-full">
+<div class="bg-[#ff5733] h-full" style="width: 45%"></div>
+<div class="bg-[#222222] h-full" style="width: 55%"></div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative bg-surface-container border border-outline-variant rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200 hover:border-primary">
+<div class="relative w-full aspect-[4/3] bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" data-alt="A 3D rendered graphic design featuring a cluster of floating, metallic spheres suspended in a dark, infinite void. The spheres reflect intensely vibrant gradients of cyan, magenta, and deep orange, creating complex light interactions. The lighting is synthetic and perfectly controlled, typical of high-end motion graphics. The visual mood is sleek, futuristic, and focused entirely on color purity and smooth gradients suitable for a dark-themed UI context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1Ri0Obg4NBAuDX0JuqQuEsjAxeiIPsVnagc9UIYtrkQUtCT_-90auH3Q5dpBUzs4LxgStNqGPbApxQafe_xSoaVB5CWAiGXefeeuXYyeQ4L-d_Hr-A00Sz6LuylbidcZ_VThJctNRzwsnHpryzwkOTiWSrH7C0mB63ALRgyIy7Ia2RD-SCjIVPqaCqIAL42jKMj9N7c3JPCxA6ElbcxsFKjpgwaxUVbz3MlVfi5IbfDcLwMkkEoVa7zcIfKbcMMKfMdu-XJDsitls"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 75%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">bookmark_border</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-2 w-full">
+<div class="bg-[#33c1ff] h-full" style="width: 70%"></div>
+<div class="bg-[#ff00ff] h-full" style="width: 20%"></div>
+<div class="bg-[#ff5733] h-full" style="width: 10%"></div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative bg-surface-container border border-outline-variant rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200 hover:border-primary">
+<div class="relative w-full aspect-square bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" data-alt="An abstract painting consisting of thick, expressive impasto brushstrokes in vivid shades of teal, orange, and deep navy blue. The texture of the oil paint is highly visible, adding a tactile quality to the image. The composition is chaotic yet balanced, with the warm and cool colors fiercely contrasting against each other. The aesthetic is raw and artistic, providing a rich, organic color map for analysis within a technical, minimalist interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk6pt5BFs7qvkwelJa2ul664ok_wa5OpFDnO8-DLfzxISVZ1IT6rDwg1NKIQPx5fjbUWU2233SgQOU0OyHcoXHI9UWJKgkjngDtQC5qU1kKn_4sXXB1lYsTqFZOYiONyhvdfU9ToliJau0Mo2Qr5kFQQVjN3fZ4xVOBJth96UlQIO4XUkjuRoH-4cYoV61rc7I_59IzIvDq5PeVhi_TDFqy8hzdIhWvEYT-HRkGyVQyw0fexluFyvn3GibsEBhSIle52aCTCETxhEA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 60%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">bookmark_border</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-2 w-full">
+<div class="bg-[#008080] h-full" style="width: 40%"></div>
+<div class="bg-[#ff8c00] h-full" style="width: 35%"></div>
+<div class="bg-[#000080] h-full" style="width: 25%"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Right) -->
+<aside class="bg-surface-container dark:bg-surface-container text-primary dark:text-primary flex flex-col gap-gutter p-4 w-[320px] hidden lg:flex docked right-0 top-header-height h-[calc(100vh-64px)] overflow-y-auto border-l border-outline-variant flat no shadows">
+<div class="mb-2">
+<h2 class="font-headline-sm text-headline-sm text-primary">Library</h2>
+<p class="font-label-mono text-label-mono text-on-surface-variant mt-1">Technical Assets</p>
+</div>
+<!-- Tabs/Navigation -->
+<nav class="flex flex-col gap-1 mb-6">
+<button class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-all duration-150 rounded w-full text-left font-label-mono text-label-mono">
+<span class="material-symbols-outlined text-[18px]">history</span>
+                    Recent History
+                </button>
+<button class="flex items-center gap-3 px-3 py-2 text-primary font-bold bg-surface-container-highest rounded transition-all duration-150 w-full text-left font-label-mono text-label-mono">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+                    Favorites
+                </button>
+</nav>
+<hr class="border-outline-variant mb-4"/>
+<!-- Content Area for Sidebar -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<h3 class="font-body-sm text-body-sm text-on-surface font-semibold">Saved Palettes</h3>
+<button class="text-primary hover:text-inverse-primary text-[12px]"><span class="material-symbols-outlined text-[16px]">add</span></button>
+</div>
+<!-- Saved Palette Item -->
+<div class="flex flex-col gap-1 group cursor-pointer">
+<div class="flex h-6 w-full rounded overflow-hidden border border-outline-variant group-hover:border-primary transition-colors">
+<div class="bg-[#ff5733] flex-1"></div>
+<div class="bg-[#33c1ff] flex-1"></div>
+<div class="bg-[#111111] flex-1"></div>
+</div>
+<span class="font-label-mono text-label-mono text-on-surface-variant group-hover:text-on-surface text-[10px]">Cyber Sunset</span>
+</div>
+<!-- Saved Palette Item -->
+<div class="flex flex-col gap-1 group cursor-pointer">
+<div class="flex h-6 w-full rounded overflow-hidden border border-outline-variant group-hover:border-primary transition-colors">
+<div class="bg-[#4edea3] flex-1"></div>
+<div class="bg-[#00285d] flex-1"></div>
+</div>
+<span class="font-label-mono text-label-mono text-on-surface-variant group-hover:text-on-surface text-[10px]">Neon Mint</span>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

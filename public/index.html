@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChromaSearch - 색상 기반 이미지 검색 시스템</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="dark-theme">
+
+  <!-- Login Modal / Screen Overlay -->
+  <div id="loginOverlay" class="overlay active">
+    <div class="glass-card login-card animate-pop">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h1>ChromaSearch</h1>
+        <p class="subtitle">색상 기반 이미지 검색 시스템</p>
+      </div>
+
+      <p class="login-desc">원하는 색감의 이미지를 비율별로 분석하고 탐색하세요.</p>
+
+      <div class="login-form">
+        <div class="input-group">
+          <i class="fa-regular fa-envelope"></i>
+          <input type="email" id="loginEmail" placeholder="이메일 주소" value="user@antigravity.com">
+        </div>
+        <div class="input-group">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="loginPassword" placeholder="비밀번호" value="••••••••">
+        </div>
+
+        <button id="btnLogin" class="btn btn-primary btn-block">
+          <span>로그인</span>
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        </button>
+
+        <div class="divider"><span>또는 간편 로그인</span></div>
+
+        <div class="social-login">
+          <button id="btnGithubLogin" class="btn btn-outline">
+            <i class="fa-brands fa-github"></i>
+            GitHub으로 로그인
+          </button>
+          <button id="btnGoogleLogin" class="btn btn-outline">
+            <i class="fa-brands fa-google"></i>
+            Google로 로그인
+          </button>
+        </div>
+      </div>
+
+      <div class="login-footer">
+        <button id="btnGuest" class="btn btn-link">비회원으로 둘러보기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Wrapper -->
+  <div id="appContainer" class="app-container hidden">
+    <!-- Top Navigation Bar -->
+    <header class="app-header glass-header">
+      <div class="logo">
+        <span class="logo-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+        <span class="logo-text">ChromaSearch</span>
+      </div>
+
+      <div class="nav-right">
+        <!-- Tab Controls -->
+        <nav class="nav-tabs">
+          <button id="tabExplore" class="tab-btn active"><i class="fa-solid fa-compass"></i> 탐색</button>
+          <button id="tabFavorites" class="tab-btn"><i class="fa-solid fa-heart"></i> 즐겨찾기</button>
+        </nav>
+
+        <!-- User Badge -->
+        <div class="user-profile">
+          <img id="userAvatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=antigravity" alt="Avatar">
+          <div class="user-info">
+            <span id="userName" class="user-name">게스트</span>
+            <span id="userRole" class="user-role">Guest User</span>
+          </div>
+          <button id="btnLogout" class="btn-icon" title="로그아웃"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Content -->
+    <main class="app-workspace">
+      <!-- Left Controls Sidebar -->
+      <aside class="sidebar-panel glass-panel">
+        <!-- Search Mode Toggle -->
+        <div class="sidebar-section">
+          <h3>검색 모드</h3>
+          <div class="mode-toggle">
+            <button id="modeSingle" class="mode-btn active">단일 색상</button>
+            <button id="modeMulti" class="mode-btn">다중 색상 비율</button>
+          </div>
+        </div>
+
+        <!-- Color Selector Area -->
+        <div class="sidebar-section">
+          <h3>색상 선택</h3>
+
+          <!-- HSL Hue Range Quick Presets -->
+          <div class="color-presets-grid">
+            <button class="preset-btn" data-hue="0" data-name="빨강" style="--preset-color: #ff3b30;"></button>
+            <button class="preset-btn" data-hue="35" data-name="주황" style="--preset-color: #ff9500;"></button>
+            <button class="preset-btn" data-hue="60" data-name="노랑" style="--preset-color: #ffcc00;"></button>
+            <button class="preset-btn" data-hue="120" data-name="초록" style="--preset-color: #34c759;"></button>
+            <button class="preset-btn" data-hue="210" data-name="파랑" style="--preset-color: #007aff;"></button>
+            <button class="preset-btn" data-hue="280" data-name="보라" style="--preset-color: #af52de;"></button>
+          </div>
+
+          <!-- Color Custom Picker Controls -->
+          <div class="custom-color-picker">
+            <!-- Selected Color Display -->
+            <div class="picker-preview-wrapper">
+              <div id="colorPreview" class="color-preview"></div>
+              <div class="color-values">
+                <span id="valHex" class="color-val-label">#FF3B30</span>
+                <span id="valRgb" class="color-val-label">rgb(255, 59, 48)</span>
+                <span id="valHsl" class="color-val-label">hsl(0, 100%, 59%)</span>
+              </div>
+            </div>
+
+            <!-- HSL Sliders -->
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>색상 (Hue)</span>
+                <span id="lblHue">0°</span>
+              </div>
+              <input type="range" id="slideHue" min="0" max="360" value="0" class="hue-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>채도 (Saturation)</span>
+                <span id="lblSat">100%</span>
+              </div>
+              <input type="range" id="slideSat" min="0" max="100" value="100">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>밝기 (Lightness)</span>
+                <span id="lblLight">59%</span>
+              </div>
+              <input type="range" id="slideLight" min="0" max="100" value="59">
+            </div>
+          </div>
+
+          <!-- Add to Selection (For Multi-color mode) -->
+          <button id="btnAddColor" class="btn btn-secondary btn-block hidden">
+            <i class="fa-solid fa-plus"></i> 색상 추가
+          </button>
+        </div>
+
+        <!-- Selected Multi-colors list -->
+        <div id="multiColorsSection" class="sidebar-section hidden">
+          <h3>선택된 색상별 가중치</h3>
+          <div id="multiColorsList" class="multi-colors-list">
+            <!-- Dynamic Color Chips with percentage weight sliders -->
+          </div>
+          <div class="total-weight-info">
+            합계: <span id="lblTotalWeight">0%</span> (나머지는 상관없음)
+          </div>
+        </div>
+
+        <!-- Keyword Search Input -->
+        <div class="sidebar-section">
+          <h3>키워드 검색</h3>
+          <div class="input-group">
+            <i class="fa-solid fa-globe"></i>
+            <input type="text" id="webSearchKeyword" placeholder="키워드 (예: 바다, 꽃, 도시)">
+          </div>
+          <p class="search-hint">색상 + 키워드로 웹에서 이미지를 찾습니다</p>
+        </div>
+
+        <!-- Search Action Button -->
+        <div class="sidebar-section search-actions">
+          <button id="btnSearch" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-magnifying-glass"></i> 웹에서 이미지 검색
+          </button>
+          <button id="btnResetSearch" class="btn btn-outline btn-block">
+            초기화
+          </button>
+        </div>
+
+        <!-- Search History Section -->
+        <div class="sidebar-section history-section">
+          <div class="section-header">
+            <h3>최근 검색 기록</h3>
+            <button id="btnClearHistory" class="btn-link-danger">비우기</button>
+          </div>
+          <ul id="historyList" class="history-list">
+            <!-- Dynamic history list items -->
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Main Gallery Container -->
+      <section class="gallery-container">
+        <!-- Top Toolbar (Sorting and Uploading) -->
+        <div class="gallery-toolbar glass-panel">
+          <div class="toolbar-left">
+            <h2 id="galleryTitle">모든 이미지</h2>
+            <span id="galleryCount" class="badge">6개</span>
+          </div>
+
+          <div class="toolbar-right">
+            <!-- Sort dropdown -->
+            <div class="sort-selector">
+              <i class="fa-solid fa-sort"></i>
+              <select id="sortSelect">
+                <option value="match">색상 일치율 순</option>
+                <option value="recent">최근 추가 순</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Web Search Loading / Status Bar -->
+        <div id="searchStatusBar" class="search-status-bar glass-panel hidden animate-fade">
+          <div class="search-status-content">
+            <div class="search-loading-spinner">
+              <i class="fa-solid fa-circle-notch fa-spin"></i>
+              <span id="searchStatusText">웹에서 이미지를 검색하는 중...</span>
+            </div>
+            <div id="searchAnalysisProgress" class="search-analysis-progress hidden">
+              <div class="progress-bar-container">
+                <div id="analysisProgressBar" class="progress-bar"></div>
+              </div>
+              <span id="analysisProgressText">색상 분석 중: 0/0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Gallery Grid -->
+        <div id="galleryGrid" class="gallery-grid">
+          <!-- Dynamic image cards -->
+        </div>
+
+        <!-- No Results / Initial State -->
+        <div id="noResults" class="no-results">
+          <i class="fa-solid fa-palette"></i>
+          <h3>이미지를 검색해 보세요</h3>
+          <p>왼쪽에서 원하는 색상을 선택하고 키워드를 입력한 후<br>"웹에서 이미지 검색" 버튼을 누르세요.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Image Detail Modal -->
+  <div id="detailModal" class="overlay">
+    <div class="glass-card detail-card animate-pop">
+      <button id="btnDetailClose" class="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+
+      <div class="detail-content">
+        <!-- Left: Image Preview -->
+        <div class="detail-left">
+          <div class="detail-img-box">
+            <img id="detailImage" src="" alt="Detail image">
+          </div>
+        </div>
+
+        <!-- Right: Color Info Details -->
+        <div class="detail-right">
+          <h2 id="detailTitle">이미지 상세 정보</h2>
+
+          <div class="detail-actions-row">
+            <button id="btnDetailFav" class="btn btn-outline btn-sm">
+              <i class="fa-solid fa-heart"></i> <span>즐겨찾기 추가</span>
+            </button>
+            <span class="dominant-tag" id="detailDominantTag" style="--dom-color: #000;">
+              대표 색상: <span id="detailDominantHex">#000000</span>
+            </span>
+          </div>
+
+          <!-- Color Composition Chart -->
+          <div class="detail-section">
+            <h3>색상 계열 분포 비율</h3>
+            <div id="detailColorStatsList" class="detail-color-stats-list">
+              <!-- Dynamically populated progress bars for color groups -->
+            </div>
+          </div>
+
+          <!-- Dominant Color Palette -->
+          <div class="detail-section">
+            <h3>추출된 주요 팔레트 (Dominant Colors)</h3>
+            <div id="detailPaletteList" class="detail-palette-list">
+              <!-- Palette color circles -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offscreen Canvas for analysis -->
+  <canvas id="analysisCanvas" style="display: none;"></canvas>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChromaSearch - Color-Based Image Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#00a572",
+                        "on-primary-container": "#00285d",
+                        "on-tertiary-container": "#461f00",
+                        "on-surface": "#dae2fd",
+                        "surface-container-low": "#131b2e",
+                        "tertiary": "#ffb786",
+                        "surface-container-lowest": "#060e20",
+                        "on-secondary": "#003824",
+                        "inverse-primary": "#005ac2",
+                        "tertiary-container": "#df7412",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dae2fd",
+                        "outline-variant": "#424754",
+                        "on-tertiary-fixed": "#311400",
+                        "on-background": "#dae2fd",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-tint": "#adc6ff",
+                        "primary-container": "#4d8eff",
+                        "surface": "#0b1326",
+                        "primary": "#adc6ff",
+                        "secondary": "#4edea3",
+                        "surface-container-highest": "#2d3449",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-variant": "#2d3449",
+                        "surface-container": "#171f33",
+                        "surface-dim": "#0b1326",
+                        "secondary-fixed-dim": "#4edea3",
+                        "outline": "#8c909f",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary-fixed": "#001a42",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-tertiary": "#502400",
+                        "surface-container-high": "#222a3d",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary-container": "#00311f",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0b1326",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "on-primary": "#002e6a",
+                        "inverse-on-surface": "#283044",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-bright": "#31394d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "header-height": "64px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "sidebar-width": "320px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "label-mono": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-mono": ["11px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-sm": ["12px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["30px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .ambient-shadow:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .glass-panel { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        
+        /* Custom styling for color picker elements */
+        .color-area-gradient {
+            background: linear-gradient(to bottom, transparent, #000), linear-gradient(to right, #fff, #33c1ff);
+        }
+        .hue-slider-gradient {
+            background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+        }
+        .color-wheel {
+            background: conic-gradient(from 90deg, red, yellow, lime, aqua, blue, magenta, red);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface text-primary dark:text-primary flex justify-between items-center h-header-height px-margin-desktop w-full glass-panel sticky top-0 z-50 border-b border-outline-variant flat no shadows">
+<div class="flex items-center gap-4">
+<span class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">ChromaSearch</span>
+<div class="relative hidden md:flex items-center ml-8 bg-surface-container-high border border-outline-variant rounded focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant ml-3 text-[18px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md text-on-surface placeholder-on-surface-variant py-2 pl-2 w-[300px]" placeholder="Search by color or keyword..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-gutter"><button class="p-2 text-primary hover:bg-surface-container-high transition-colors duration-200 rounded flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button><button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded flex items-center justify-center"><span class="material-symbols-outlined" data-icon="share">share</span></button>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden relative">
+<!-- Left Color Inspector Panel -->
+<aside class="bg-surface-container dark:bg-surface-container text-primary dark:text-primary flex flex-col gap-5 p-4 w-[280px] hidden lg:flex flex-shrink-0 h-[calc(100vh-64px)] overflow-y-auto border-r border-outline-variant flat no shadows">
+<div class="mb-1">
+<h2 class="font-headline-sm text-headline-sm text-primary">Color Inspector</h2>
+<p class="font-label-mono text-label-mono text-on-surface-variant mt-1">Precise Tuning</p>
+</div>
+<!-- Color Preview -->
+<div class="w-full h-12 rounded border border-outline-variant bg-[#33c1ff] shadow-inner relative overflow-hidden flex items-end p-2">
+<span class="font-label-mono text-label-mono text-white mix-blend-difference drop-shadow-md">Active Color</span>
+</div>
+<!-- Format Selector -->
+<div class="flex flex-col gap-2">
+<label class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider">Format Mode</label>
+<div class="relative">
+<select class="w-full bg-surface-container-high border border-outline-variant rounded text-body-sm text-on-surface py-2 pl-3 pr-8 focus:border-primary focus:ring-0 appearance-none cursor-pointer">
+<option value="hex">HEX (Hexadecimal)</option>
+<option value="rgb">RGB (Red, Green, Blue)</option>
+<option value="hsl">HSL (Hue, Sat, Light)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<hr class="border-outline-variant my-1"/>
+<!-- HEX Mode Area -->
+<div class="flex flex-col gap-3">
+<h3 class="font-label-mono text-label-mono text-on-surface font-semibold uppercase">Color Space</h3>
+<!-- Interactive Color Picker -->
+<div class="w-full aspect-square rounded border border-outline-variant relative overflow-hidden color-area-gradient cursor-crosshair">
+<div class="absolute w-4 h-4 rounded-full border-[2px] border-white shadow-[0_0_4px_rgba(0,0,0,0.5)] pointer-events-none" style="top: 25%; left: 65%; transform: translate(-50%, -50%);"></div>
+</div>
+<!-- Hue Slider -->
+<div class="w-full h-4 rounded border border-outline-variant relative hue-slider-gradient cursor-ew-resize">
+<div class="absolute w-3 h-5 bg-white border border-gray-400 shadow-sm rounded-[2px] pointer-events-none" style="top: -2px; left: 60%; transform: translateX(-50%);"></div>
+</div>
+<!-- HEX Manual Input -->
+<div class="flex items-center bg-surface-container-high border border-outline-variant rounded focus-within:border-primary transition-colors px-3 py-2 mt-1">
+<span class="text-on-surface-variant font-label-mono mr-2">#</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md text-on-surface font-label-mono w-full p-0 uppercase" type="text" value="33C1FF"/>
+</div>
+</div>
+<hr class="border-outline-variant my-1"/>
+<!-- RGB Mode Area -->
+<div class="flex flex-col gap-3">
+<h3 class="font-label-mono text-label-mono text-on-surface font-semibold uppercase">Channels</h3>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="font-label-mono text-label-mono text-error w-4">R</span>
+<input class="flex-1 h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-error" max="255" min="0" type="range" value="51"/>
+<span class="font-label-mono text-label-mono w-8 text-right">51</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-mono text-label-mono text-secondary w-4">G</span>
+<input class="flex-1 h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-secondary" max="255" min="0" type="range" value="193"/>
+<span class="font-label-mono text-label-mono w-8 text-right">193</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-mono text-label-mono text-primary w-4">B</span>
+<input class="flex-1 h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" max="255" min="0" type="range" value="255"/>
+<span class="font-label-mono text-label-mono w-8 text-right">255</span>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-4">
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary font-bold py-2.5 px-4 rounded transition-colors duration-200">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+                Add to Search
+            </button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col h-[calc(100vh-64px)] overflow-y-auto bg-surface-container-lowest">
+<!-- Tool Bar -->
+<div class="sticky top-0 z-40 bg-surface/90 glass-panel border-b border-outline-variant p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div class="flex items-center gap-4 flex-wrap">
+<div class="flex items-center gap-2 bg-surface-container-high border border-outline-variant rounded p-1">
+<div class="w-6 h-6 rounded-sm bg-[#ff5733] border border-outline-variant"></div>
+<input class="bg-transparent border-none focus:ring-0 font-label-mono text-label-mono text-on-surface w-20 py-1 px-2" type="text" value="#FF5733"/>
+<button class="p-1 text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">close</span></button>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-high border border-outline-variant rounded p-1">
+<div class="w-6 h-6 rounded-sm bg-[#33c1ff] border border-outline-variant"></div>
+<input class="bg-transparent border-none focus:ring-0 font-label-mono text-label-mono text-on-surface w-[120px] py-1 px-2" type="text" value="RGB(51, 193, 255)"/>
+<button class="p-1 text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">close</span></button>
+</div>
+<button class="flex items-center justify-center w-8 h-8 rounded border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary transition-colors bg-surface-container-high">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-label-mono text-label-mono text-on-surface-variant uppercase">Sort By:</span>
+<select class="bg-surface-container-high border border-outline-variant rounded text-body-sm text-on-surface py-1 pl-2 pr-8 focus:border-primary focus:ring-0 cursor-pointer">
+<option>Match %</option>
+<option>Newest</option>
+<option>Popular</option>
+</select>
+</div>
+</div>
+<!-- Results Grid: Restored proportions from Screen 5 -->
+<div class="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max">
+<!-- Card 1 -->
+<div class="group relative bg-surface-container-high border border-outline-variant rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200 hover:border-primary">
+<div class="relative w-full aspect-[1/1] bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG6kX20zRCdOopTGGiyb9LWd_mnghLQ4N7NvMl9sLBhXancgSCxGHoGjxjsZyFcS5QDoM11ej-h83NrEmRHprW2YQrlRZdFGb7jimUzk_GCkb86g1f4H-0NlwmUCBckqK05PcPTQI9yu7z7ZIWCgUevtTpZwjHJTa6AZYCao9kG6DsQ2rc_8bkNxY4yCdAvNY_E5JiPoK0UrjjODlsgrVHWeuHo-nbgMn483c4qesFHqvDqrIrBPWgDfEfEQ2GeyVPEnvYe9nJGlhM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 92%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">bookmark_border</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-1.5 w-full">
+<div class="bg-[#ff5733] h-full" style="width: 60%"></div>
+<div class="bg-[#33c1ff] h-full" style="width: 30%"></div>
+<div class="bg-[#111111] h-full" style="width: 10%"></div>
+</div>
+<div class="h-12 bg-surface-container"></div>
+</div>
+<!-- Card 2 -->
+<div class="group relative bg-surface-container-high border border-primary border-[2px] rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200">
+<div class="relative w-full aspect-[1/1] bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGvwWBrJpKbvkb_DRflE-tuO8JLXhFcN7kPlqJbv5aF1qvlas5JoAVAU2yO_d33hUMmGWVOBiz4NiQPk2qOsaVRj4tkVH5W57joV5v0BbnkWKUhlNA1VKGfggn01uppSP8IL6vdH0bM-qdd-M9aGFgOvMrNJlGVOvIrYFTJzCEdYVldHTGmoRtZvuLrdOUds9u6M9CE6-2E4KFjV1R8Dunrmg77b5VYf4vW0EBzuGOyuv3Ezj8jQ5Vtpew4wEcgFQpkZXTfJtTbdDA"/>
+<div class="absolute top-2 left-2 bg-primary text-on-primary font-label-mono text-[10px] px-1.5 py-0.5 rounded-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check</span> SELECTED
+                    </div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 88%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]" style='font-variation-settings: "FILL" 1;'>bookmark</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-1.5 w-full">
+<div class="bg-[#ff5733] h-full" style="width: 45%"></div>
+<div class="bg-[#222222] h-full" style="width: 55%"></div>
+</div>
+<div class="h-12 bg-surface-container"></div>
+</div>
+<!-- Card 3 -->
+<div class="group relative bg-surface-container-high border border-outline-variant rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200 hover:border-primary">
+<div class="relative w-full aspect-[1/1] bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1Ri0Obg4NBAuDX0JuqQuEsjAxeiIPsVnagc9UIYtrkQUtCT_-90auH3Q5dpBUzs4LxgStNqGPbApxQafe_xSoaVB5CWAiGXefeeuXYyeQ4L-d_Hr-A00Sz6LuylbidcZ_VThJctNRzwsnHpryzwkOTiWSrH7C0mB63ALRgyIy7Ia2RD-SCjIVPqaCqIAL42jKMj9N7c3JPCxA6ElbcxsFKjpgwaxUVbz3MlVfi5IbfDcLwMkkEoVa7zcIfKbcMMKfMdu-XJDsitls"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 75%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">bookmark_border</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-1.5 w-full">
+<div class="bg-[#33c1ff] h-full" style="width: 70%"></div>
+<div class="bg-[#ff00ff] h-full" style="width: 20%"></div>
+<div class="bg-[#ff5733] h-full" style="width: 10%"></div>
+</div>
+<div class="h-12 bg-surface-container"></div>
+</div>
+<!-- Card 4 -->
+<div class="group relative bg-surface-container-high border border-outline-variant rounded overflow-hidden flex flex-col ambient-shadow transition-all duration-200 hover:border-primary">
+<div class="relative w-full aspect-[1/1] bg-surface-container-low">
+<img alt="image-result" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk6pt5BFs7qvkwelJa2ul664ok_wa5OpFDnO8-DLfzxISVZ1IT6rDwg1NKIQPx5fjbUWU2233SgQOU0OyHcoXHI9UWJKgkjngDtQC5qU1kKn_4sXXB1lYsTqFZOYiONyhvdfU9ToliJau0Mo2Qr5kFQQVjN3fZ4xVOBJth96UlQIO4XUkjuRoH-4cYoV61rc7I_59IzIvDq5PeVhi_TDFqy8hzdIhWvEYT-HRkGyVQyw0fexluFyvn3GibsEBhSIle52aCTCETxhEA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center">
+<span class="font-label-mono text-label-mono text-white">Match: 60%</span>
+<button class="text-white hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">bookmark_border</span></button>
+</div>
+</div>
+</div>
+<div class="flex h-1.5 w-full">
+<div class="bg-[#008080] h-full" style="width: 40%"></div>
+<div class="bg-[#ff8c00] h-full" style="width: 35%"></div>
+<div class="bg-[#000080] h-full" style="width: 25%"></div>
+</div>
+<div class="h-12 bg-surface-container"></div>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Right): Restored width from Screen 5 -->
+<aside class="bg-surface-container dark:bg-surface-container text-primary dark:text-primary flex flex-col gap-4 p-6 w-[320px] hidden lg:flex flex-shrink-0 h-[calc(100vh-64px)] overflow-y-auto border-l border-outline-variant flat no shadows">
+<div class="mb-2">
+<h2 class="font-headline-sm text-headline-sm text-primary">Library</h2>
+<p class="font-label-mono text-label-mono text-on-surface-variant mt-1 uppercase tracking-tight">Technical Assets</p>
+</div>
+<!-- Tabs -->
+<nav class="flex flex-col gap-1 mb-6">
+<button class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-all duration-150 rounded w-full text-left font-label-mono text-label-mono">
+<span class="material-symbols-outlined text-[18px]">history</span>
+                Recent History
+            </button>
+<button class="flex items-center gap-3 px-3 py-2 text-primary font-bold bg-surface-container-highest rounded transition-all duration-150 w-full text-left font-label-mono text-label-mono">
+<span class="material-symbols-outlined text-[18px]" style='font-variation-settings: "FILL" 1;'>bookmark</span>
+                Favorites
+            </button>
+</nav>
+<hr class="border-outline-variant mb-4"/>
+<!-- Saved Palettes -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<h3 class="font-body-sm text-body-sm text-on-surface font-semibold uppercase tracking-wider">Saved Palettes</h3>
+<button class="text-primary hover:text-inverse-primary"><span class="material-symbols-outlined text-[18px]">add</span></button>
+</div>
+<!-- Item 1 -->
+<div class="flex flex-col gap-1 group cursor-pointer">
+<div class="flex h-6 w-full rounded-sm overflow-hidden border border-outline-variant group-hover:border-primary transition-colors">
+<div class="bg-[#ff5733] flex-1"></div>
+<div class="bg-[#33c1ff] flex-1"></div>
+<div class="bg-[#111111] flex-1"></div>
+</div>
+<span class="font-label-mono text-label-mono text-on-surface-variant group-hover:text-on-surface text-[10px]">Cyber Sunset</span>
+</div>
+<!-- Item 2 -->
+<div class="flex flex-col gap-1 group cursor-pointer">
+<div class="flex h-6 w-full rounded-sm overflow-hidden border border-outline-variant group-hover:border-primary transition-colors">
+<div class="bg-[#4edea3] flex-[0.7]"></div>
+<div class="bg-[#00285d] flex-1"></div>
+</div>
+<span class="font-label-mono text-label-mono text-on-surface-variant group-hover:text-on-surface text-[10px]">Neon Mint</span>
+</div>
+</div>
+</aside>
+</div>
+<!-- Overlay and Side Drawer -->
+<div class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-[2px] transition-opacity duration-300" id="mobile-menu-overlay">
+<div class="absolute right-0 top-0 h-full w-[15%] min-w-[240px] bg-surface-container-high border-l border-outline-variant shadow-2xl flex flex-col">
+<!-- Drawer Header -->
+<div class="flex items-center justify-between p-4 border-b border-outline-variant">
+<span class="font-headline-sm text-primary">Menu</span>
+<button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col p-4 gap-2">
+<a class="flex items-center gap-4 p-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-variant transition-all group" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="font-body-md font-semibold">Home</span>
+</a>
+<a class="flex items-center gap-4 p-3 rounded text-primary bg-primary/10 transition-all group" href="#">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<span class="font-body-md font-semibold">Search</span>
+</a>
+<a class="flex items-center gap-4 p-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-variant transition-all group" href="#">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+<span class="font-body-md font-semibold">Analysis</span>
+</a>
+<a class="flex items-center gap-4 p-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-variant transition-all group" href="#">
+<span class="material-symbols-outlined text-[24px]">bookmark</span>
+<span class="font-body-md font-semibold">Favorites</span>
+</a>
+<div class="mt-4 pt-4 border-t border-outline-variant">
+<a class="flex items-center gap-4 p-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-variant transition-all group" href="#">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="font-body-md font-semibold">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Footer / Branding -->
+<div class="mt-auto p-6 border-t border-outline-variant bg-surface-container">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs font-label-mono">CS</div>
+<div>
+<p class="text-body-sm font-bold text-on-surface">ChromaSearch</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-label-mono">v2.4.0-Stable</p>
+</div>
+</div>
+</div>
+</div>
+</div></body></html>

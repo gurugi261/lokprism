@@ -1,0 +1,21 @@
+{
+  "name": "color-image-search",
+  "version": "1.0.0",
+  "description": "Color-based Image Search System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "color",
+    "image-search",
+    "canvas",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

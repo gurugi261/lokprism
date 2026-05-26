@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChromaSearch - User Activity</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-container": "#00a572",
+                        "on-primary-container": "#00285d",
+                        "on-tertiary-container": "#461f00",
+                        "on-surface": "#dae2fd",
+                        "surface-container-low": "#131b2e",
+                        "tertiary": "#ffb786",
+                        "surface-container-lowest": "#060e20",
+                        "on-secondary": "#003824",
+                        "inverse-primary": "#005ac2",
+                        "tertiary-container": "#df7412",
+                        "on-error": "#690005",
+                        "inverse-surface": "#dae2fd",
+                        "outline-variant": "#424754",
+                        "on-tertiary-fixed": "#311400",
+                        "on-background": "#dae2fd",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-tint": "#adc6ff",
+                        "primary-container": "#4d8eff",
+                        "surface": "#0b1326",
+                        "primary": "#adc6ff",
+                        "secondary": "#4edea3",
+                        "surface-container-highest": "#2d3449",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-variant": "#2d3449",
+                        "surface-container": "#171f33",
+                        "surface-dim": "#0b1326",
+                        "secondary-fixed-dim": "#4edea3",
+                        "outline": "#8c909f",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary-fixed": "#001a42",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-tertiary": "#502400",
+                        "surface-container-high": "#222a3d",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-secondary-container": "#00311f",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0b1326",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "on-primary": "#002e6a",
+                        "inverse-on-surface": "#283044",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-bright": "#31394d"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "unit": "4px",
+                        "header-height": "64px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "sidebar-width": "320px",
+                        "margin-desktop": "32px"
+                    },
+                    fontFamily: {
+                        "headline-lg-mobile": ["Inter"],
+                        "label-mono": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-lg-mobile": ["24px", { lineHeight: "1.2", fontWeight: "600" }],
+                        "label-mono": ["11px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "headline-sm": ["18px", { lineHeight: "1.4", fontWeight: "600" }],
+                        "body-sm": ["12px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "body-md": ["14px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "display": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg": ["30px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.surface');
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant');
+            border-radius: theme('borderRadius.full');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline');
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopNavBar -->
+<header class="bg-surface flex justify-between items-center h-header-height px-margin-desktop w-full backdrop-blur-md sticky top-0 z-50 border-b border-outline-variant flat no shadows">
+<div class="flex items-center gap-gutter">
+<span class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">ChromaSearch</span>
+<!-- Search Bar (on_left) -->
+<div class="hidden md:flex items-center relative ml-8">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant pl-10 pr-4 py-1.5 rounded-DEFAULT focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-label-mono text-label-mono w-64 transition-colors" placeholder="Search hex, rgb, or descriptive keywords..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="Contrast" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 p-2 rounded-DEFAULT">
+<span class="material-symbols-outlined">contrast</span>
+</button>
+<button aria-label="Settings" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 p-2 rounded-DEFAULT">
+<span class="material-symbols-outlined">settings</span>
+</button><button aria-label="Share" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 p-2 rounded-DEFAULT">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button aria-label="Account" class="text-primary border-b-2 border-primary pb-1 p-2 rounded-DEFAULT">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Layout Container -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Main Content Area (Canvas) -->
+<main class="flex-1 overflow-y-auto p-margin-desktop lg:pr-[calc(320px+32px)]">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4 border-b border-outline-variant pb-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-background mb-2">Favorites Gallery</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Curated images saved from previous extractions.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-surface-container border border-outline-variant rounded-DEFAULT p-1 mr-4">
+<button class="bg-surface-container-highest text-primary rounded px-3 py-1 font-label-mono text-label-mono shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 16px;">grid_view</span> Grid
+                        </button>
+<button class="text-on-surface-variant hover:text-on-surface rounded px-3 py-1 font-label-mono text-label-mono flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 16px;">view_list</span> List
+                        </button>
+</div>
+<button class="bg-transparent border border-outline text-on-surface hover:bg-surface-container-low px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 16px;">css</span> Export CSS
+                    </button>
+<button class="bg-primary text-on-primary hover:bg-primary-fixed px-4 py-2 rounded-DEFAULT font-label-mono text-label-mono transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 16px;">data_object</span> Export JSON
+                    </button>
+</div>
+</div>
+<!-- Content Grid - Grouped by Color -->
+<div class="space-y-12">
+<!-- Color Group 1 -->
+<section>
+<div class="flex items-center gap-3 mb-4">
+<div class="w-6 h-6 rounded-full bg-primary border border-outline-variant shadow-[0_0_8px_rgba(173,198,255,0.3)]"></div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Dominant: Primary Blue <span class="font-label-mono text-label-mono text-on-surface-variant ml-2">#ADC6FF</span></h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-gutter">
+<!-- Image Card 1 -->
+<div class="group relative aspect-[4/3] bg-surface-container-low border border-outline-variant rounded-DEFAULT overflow-hidden cursor-pointer"><div class="absolute top-2 right-2 z-10">
+<div class="bg-surface-container-highest/60 backdrop-blur-sm p-1 rounded-full border border-outline-variant shadow-sm flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<img alt="Saved visual asset" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Abstract liquid macro photography featuring swirling gradients of pale blue and deep indigo. The lighting is soft and studio-quality, emphasizing the smooth, glossy texture of the fluid. The aesthetic perfectly matches the dark, technical UI theme, providing a pristine, high-contrast visual asset for color analysis." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYh5K6u5LhZOeVOOL0KNPxO-OFEn35gDXdgQrblXYDpkWVF-T2TIBTZWfx1w36Aruqn8e8wZfah7NaI1LLhUlIFLDYRqKCHFfP3ElDbiiwpsWa-7UTFeLycIYBfiVAQV9OTObnVUQCjFShvtxh-i1L_G9oHhd6_IG7k0Slk2Nui06wEm4_HX8DfclG-KzwI8hWobxtMhHUSd8pgXF3Xb7oybDtfAIqkXFXp_iZw0a1T-wLrHS3kZ4ZeeB9vIF1HKDsiCkcmmgGlu0U"/>
+<!-- Hover Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center w-full">
+<span class="font-label-mono text-label-mono text-primary">68% Match</span>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Image Card 2 -->
+<div class="group relative aspect-[4/3] bg-surface-container-low border border-primary rounded-DEFAULT overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.2)] cursor-pointer"><div class="absolute top-2 right-2 z-10">
+<div class="bg-surface-container-highest/60 backdrop-blur-sm p-1 rounded-full border border-outline-variant shadow-sm flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="absolute top-2 left-2 bg-primary text-on-primary font-label-mono text-label-mono px-2 py-0.5 rounded border border-on-primary/20 z-10">SELECTED</div>
+<img alt="Saved visual asset" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Minimalist architectural detail showing a modern glass facade reflecting a clear twilight sky. The geometry is sharp and precise, with structural lines creating a grid pattern. The color palette is dominated by cool cyans and deep navy blues, fitting seamlessly into a high-end, color-centric design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvRKg8hzlAFJgPo0It4BQg1xEkZ6RSC_NJsvADAGApBKmfvMsG52ETv9x_xXazeeuZ5xXsrZ8iR69YHqmdXc1NKDA6y0k_cstXr2Ig1CFYWOzoUMRDiQZW3rdG9T_h85B9RWpww75VWCYuy3KOD7Sbp0GuDmMWZaio13fD4aLa8lb0heetM3b06TuAQQYc21oQ7U1X5cbUcPu8STit_3YgPR8tPkPjVsyL524ofZGCnjdMZN6v6V2diaw49SpUmbBvHBHlOpRsQ1HJ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center w-full">
+<span class="font-label-mono text-label-mono text-primary">82% Match</span>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Color Group 2 -->
+<section>
+<div class="flex items-center gap-3 mb-4">
+<div class="w-6 h-6 rounded-full bg-secondary border border-outline-variant shadow-[0_0_8px_rgba(78,222,163,0.2)]"></div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Dominant: Emerald Mint <span class="font-label-mono text-label-mono text-on-surface-variant ml-2">#4EDEA3</span></h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-gutter">
+<!-- Image Card 3 -->
+<div class="group relative aspect-[4/3] bg-surface-container-low border border-outline-variant rounded-DEFAULT overflow-hidden cursor-pointer"><div class="absolute top-2 right-2 z-10">
+<div class="bg-surface-container-highest/60 backdrop-blur-sm p-1 rounded-full border border-outline-variant shadow-sm flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<img alt="Saved visual asset" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Overhead view of dense, lush tropical foliage in deep shadows and bright mint-green highlights. The lighting creates high contrast between the dark undergrowth and the vibrantly illuminated upper leaves. The organic textures provide a complex visual dataset for the extraction algorithm within this minimalist UI frame." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQYVJRoycYVBpoGHC345EkzcXY0A-2Dz0iCguX4yxAezv6r1LFGKIGJHt7qkC9MlpL5QNya1caSv4PwDemRLTX-L3eyDbheXBgWvo5UXi6ObjxFySNZdJqaOEcMAjUM8JyDU8tj5zpa0SAKkzRAk0lNc6D1vo9v6c1tfsnlcV7fE4RqSR4nz2k8yyRZPpflDX7NpyCgtwUD_chp9-zL0B6Dd2twH9GHw70ScwRNjgxHzkdMNLfLLuym-Mhj1uFyZloDl-mUx6cBiA6"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+<div class="flex justify-between items-center w-full">
+<span class="font-label-mono text-label-mono text-secondary">54% Match</span>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- SideNavBar (Expanded / Fixed) -->
+<aside class="bg-surface-container flex flex-col gap-gutter p-4 w-[320px] hidden lg:flex docked fixed right-0 top-header-height h-[calc(100vh-64px)] border-l border-outline-variant flat no shadows">
+<div class="mb-4 px-2">
+<h2 class="font-headline-sm text-headline-sm text-primary">Library</h2>
+<p class="font-label-mono text-label-mono text-on-surface-variant mt-1">Technical Assets</p>
+</div>
+<nav class="flex flex-col gap-1">
+<!-- Inactive Tab -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-all duration-150 font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined">history</span>
+                    Recent History
+                </a>
+<!-- Active Tab -->
+<a class="flex items-center gap-3 px-3 py-2 text-primary font-bold bg-surface-container-highest rounded-lg transition-all duration-150 font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+                    Favorites
+                </a>
+</nav>
+<!-- Mini History Preview (to show dual utility) -->
+<div class="mt-8 pt-6 border-t border-outline-variant flex-1 overflow-y-auto">
+<h3 class="font-label-mono text-label-mono text-on-surface-variant px-2 mb-3 uppercase tracking-wider">Recent Extractions</h3>
+<div class="flex flex-col gap-2">
+<!-- History Item -->
+<div class="flex items-center justify-between p-2 rounded hover:bg-surface-variant transition-colors cursor-pointer group">
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-full bg-tertiary"></div>
+<span class="font-label-mono text-label-mono text-on-surface group-hover:text-primary transition-colors">#FFB786</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm opacity-0 group-hover:opacity-100 transition-opacity">refresh</span>
+</div>
+<!-- History Item -->
+<div class="flex items-center justify-between p-2 rounded hover:bg-surface-variant transition-colors cursor-pointer group">
+<div class="flex items-center gap-2">
+<div class="w-4 h-4 rounded-full bg-error-container"></div>
+<span class="font-label-mono text-label-mono text-on-surface group-hover:text-primary transition-colors">#93000A</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm opacity-0 group-hover:opacity-100 transition-opacity">refresh</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>
