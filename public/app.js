@@ -144,10 +144,21 @@ function loadSession() {
 async function fetchImages() {
   try {
     const res = await fetch('/api/images');
+    if (!res.ok) throw new Error('API server not available');
     allImages = await res.json();
     fetchFavorites();
   } catch (err) {
-    console.error('Error fetching images:', err);
+    console.warn('API server fetch failed, trying static db.json fallback (GitHub Pages):', err);
+    try {
+      const res = await fetch('db.json');
+      allImages = await res.json();
+      if (allImages && allImages.images) {
+        allImages = allImages.images;
+      }
+      fetchFavorites();
+    } catch (fallbackErr) {
+      console.error('Error fetching fallback db.json:', fallbackErr);
+    }
   }
 }
 
