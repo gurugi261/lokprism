@@ -217,6 +217,11 @@
           </div>
 
           <div class="toolbar-right">
+            <!-- Upload Trigger Button -->
+            <button id="btnTriggerUpload" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-cloud-arrow-up"></i> 이미지 분석 및 업로드
+            </button>
+            
             <!-- Sort dropdown -->
             <div class="sort-selector">
               <i class="fa-solid fa-sort"></i>
@@ -224,6 +229,50 @@
                 <option value="match">색상 일치율 순</option>
                 <option value="recent">최근 추가 순</option>
               </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Upload Panel (Collapsible) -->
+        <div id="uploadContainer" class="upload-container glass-panel hidden animate-fade">
+          <div id="dropzone" class="dropzone">
+            <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <p><strong>이미지를 드래그 앤 드롭</strong>하거나 클릭하여 파일을 선택하세요</p>
+            <span class="upload-limits">JPG, PNG, GIF, WEBP 지원 (최대 10MB)</span>
+            <input type="file" id="fileInput" class="hidden" accept="image/*">
+          </div>
+
+          <div id="analysisPreview" class="analysis-preview hidden">
+            <div class="preview-cols">
+              <!-- Left Column: Image Preview -->
+              <div class="preview-img-wrapper">
+                <img id="imgToAnalyze" src="" alt="분석할 이미지">
+              </div>
+
+              <!-- Right Column: Analysis stats & Title -->
+              <div class="preview-stats">
+                <h4>이미지 색상 분석 결과</h4>
+                
+                <!-- Canvas Analysis chart segment container -->
+                <div class="analysis-progress-wrapper">
+                  <div class="loading-spinner hidden">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> 색상 분석 중...
+                  </div>
+                  <div id="analysisBarChart" class="analysis-bar-chart hidden"></div>
+                </div>
+
+                <!-- Title Input -->
+                <div class="input-group" style="margin-bottom: 0;">
+                  <i class="fa-solid fa-heading"></i>
+                  <input type="text" id="uploadTitle" placeholder="이미지 제목 입력 (예: 해질녘 바다)">
+                </div>
+
+                <!-- Actions -->
+                <div class="preview-actions">
+                  <button id="btnSaveUpload" class="btn btn-primary btn-sm" disabled>분석된 이미지 추가</button>
+                  <button id="btnCancelUpload" class="btn btn-outline btn-sm">취소</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

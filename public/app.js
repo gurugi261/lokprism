@@ -5,6 +5,7 @@ let selectedSat = 100;
 let selectedLight = 59;
 let multiColors = []; // array of { id, hue, sat, light, name, weight }
 let allImages = [];
+let webSearchResults = null; // null if showing local images, array if showing web search results
 let favoriteIds = [];
 let searchHistory = [];
 let activeTab = 'explore';
@@ -455,11 +456,134 @@ function renderMultiColors() {
 
 // Trigger Color Search
 async function triggerSearch() {
+  const keywordInput = document.getElementById('webSearchKeyword');
+  let query = keywordInput.value.trim();
+
+  // If keyword is empty, construct a query based on selected color(s) to fetch from Google
+  if (!query) {
+    if (currentMode === 'single') {
+      let label = '빨강';
+      for (const group of HSL_GROUPS) {
+        for (const r of group.range) {
+          if (selectedHue >= r[0] && selectedHue <= r[1]) {
+            label = group.label;
+          }
+        }
+      }
+      query = `${label}색`;
+    } else {
+      if (multiColors.length > 0) {
+        query = multiColors.map(c => `${c.name}색`).join(' ');
+      } else {
+        query = '알록달록한 색상';
+      }
+    }
+  }
+
+  // Show search status bar
+  const statusBar = document.getElementById('searchStatusBar');
+  const statusText = document.getElementById('searchStatusText');
+  const analysisProgress = document.getElementById('searchAnalysisProgress');
+  const progressBar = document.getElementById('analysisProgressBar');
+  const progressText = document.getElementById('analysisProgressText');
+
+  statusBar.classList.remove('hidden');
+  analysisProgress.classList.add('hidden');
+  statusText.innerText = 'Google에서 이미지를 검색하는 중...';
+
+  // Determine color query parameter if single color selected
+  let colorParam = '';
+  if (currentMode === 'single') {
+    for (const group of HSL_GROUPS) {
+      for (const r of group.range) {
+        if (selectedHue >= r[0] && selectedHue <= r[1]) {
+          colorParam = group.name;
+        }
+      }
+    }
+  }
+
+  try {
+    const res = await fetch(`/api/search-web?query=${encodeURIComponent(query)}&color=${colorParam}`);
+    if (!res.ok) throw new Error('Search failed');
+    
+    const searchData = await res.json();
+    const searchImages = searchData.images || [];
+
+    if (searchImages.length === 0) {
+      statusText.innerText = '검색 결과가 없습니다.';
+      setTimeout(() => statusBar.classList.add('hidden'), 3000);
+      webSearchResults = [];
+      renderGallery();
+      return;
+    }
+
+    // Dynamic color analysis for Google search results
+    statusText.innerText = '이미지 다운로드 및 색상 분석 중...';
+    analysisProgress.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    progressText.innerText = `색상 분석 중: 0/${searchImages.length}`;
+
+    const analyzedImages = [];
+    let completedCount = 0;
+
+    for (const img of searchImages) {
+      try {
+        const imgEl = new Image();
+        imgEl.crossOrigin = 'Anonymous';
+        
+        await new Promise((resolve) => {
+          imgEl.onload = () => {
+            try {
+              const { colors, dominantColor } = getColorsFromImageElement(imgEl);
+              analyzedImages.push({
+                id: img.id,
+                title: img.title || `${query} 이미지`,
+                url: img.url,
+                thumbnailUrl: img.thumbnailUrl,
+                colors,
+                dominantColor,
+                source: img.source
+              });
+            } catch (err) {
+              console.error('Failed to parse colors of search image:', err);
+            }
+            resolve();
+          };
+          imgEl.onerror = () => {
+            resolve(); // proceed even if one image fails to load
+          };
+          imgEl.src = `/api/proxy-image?url=${encodeURIComponent(img.url)}`;
+        });
+      } catch (err) {
+        console.error('Failed to process search result image:', img.url, err);
+      }
+
+      completedCount++;
+      const percent = Math.round((completedCount / searchImages.length) * 100);
+      progressBar.style.width = `${percent}%`;
+      progressText.innerText = `색상 분석 중: ${completedCount}/${searchImages.length}`;
+    }
+
+    webSearchResults = analyzedImages;
+    statusBar.classList.add('hidden');
+    
+    // Save history
+    await saveHistory(query);
+    renderGallery();
+  } catch (err) {
+    console.error('Web search error:', err);
+    statusText.innerText = '이미지 검색 중 오류가 발생했습니다.';
+    setTimeout(() => statusBar.classList.add('hidden'), 3000);
+  }
+}
+
+// Save Search History
+async function saveHistory(query) {
   let colorValueText = '';
   let colorValueVal = '';
 
   if (currentMode === 'single') {
-    // Get HSL label
     let label = '빨강';
     for (const group of HSL_GROUPS) {
       for (const r of group.range) {
@@ -468,18 +592,13 @@ async function triggerSearch() {
         }
       }
     }
-    colorValueText = `${label} 계열`;
+    colorValueText = `${query ? query + ' + ' : ''}${label} 계열`;
     colorValueVal = hslToHex(selectedHue, selectedSat, selectedLight);
   } else {
-    if (multiColors.length === 0) {
-      alert('다중 색상 검색을 위해 최소 1개 이상의 색상을 추가해주세요.');
-      return;
-    }
-    colorValueText = multiColors.map(c => `${c.name} ${c.weight}%`).join(', ');
+    colorValueText = `${query ? query + ' + ' : ''}` + multiColors.map(c => `${c.name} ${c.weight}%`).join(', ');
     colorValueVal = multiColors.map(c => `${c.hex}_${c.weight}`).join('|');
   }
 
-  // Save history to Server
   try {
     await fetch('/api/history', {
       method: 'POST',
@@ -494,8 +613,6 @@ async function triggerSearch() {
   } catch (err) {
     console.error('Error saving history:', err);
   }
-
-  renderGallery();
 }
 
 // Reset Search params
@@ -514,6 +631,9 @@ function resetSearch() {
 
   // trigger input events manually
   slideHue.dispatchEvent(new Event('input'));
+  
+  document.getElementById('webSearchKeyword').value = '';
+  webSearchResults = null;
   
   multiColors = [];
   renderMultiColors();
@@ -674,7 +794,9 @@ function renderGallery() {
   
   // Filter by activeTab (favorites vs all)
   let list = allImages;
-  if (activeTab === 'favorites') {
+  if (activeTab === 'explore') {
+    list = webSearchResults !== null ? webSearchResults : allImages;
+  } else if (activeTab === 'favorites') {
     list = allImages.filter(img => favoriteIds.includes(img.id));
   }
 
@@ -756,13 +878,55 @@ function renderGallery() {
   });
 }
 
-// Toggle favorite state of an image
+// Toggle favorite state of an image (auto-saves web search results to local database)
 async function toggleFavorite(imageId) {
+  const image = allImages.find(img => img.id === imageId) || (webSearchResults && webSearchResults.find(img => img.id === imageId));
+  if (!image) return;
+
+  let finalId = imageId;
+  const isSavedLocally = allImages.some(img => img.url === image.url);
+
+  if (!isSavedLocally) {
+    try {
+      const saveRes = await fetch('/api/images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: image.title,
+          url: image.url,
+          colors: image.colors,
+          dominantColor: image.dominantColor
+        })
+      });
+      if (saveRes.ok) {
+        const savedImg = await saveRes.json();
+        allImages.unshift(savedImg); // add to top
+        finalId = savedImg.id;
+        if (webSearchResults) {
+          const webImg = webSearchResults.find(img => img.url === image.url);
+          if (webImg) webImg.id = savedImg.id;
+        }
+      } else {
+        alert('즐겨찾기 추가를 위한 이미지 저장 실패');
+        return;
+      }
+    } catch (err) {
+      console.error('Error auto-saving web search image:', err);
+      alert('서버 오류로 즐겨찾기에 추가할 수 없습니다.');
+      return;
+    }
+  } else {
+    const localImg = allImages.find(img => img.url === image.url);
+    if (localImg) {
+      finalId = localImg.id;
+    }
+  }
+
   try {
     const res = await fetch('/api/favorites/toggle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageId })
+      body: JSON.stringify({ imageId: finalId })
     });
     const data = await res.json();
     favoriteIds = data.favorites;
@@ -772,9 +936,10 @@ async function toggleFavorite(imageId) {
     
     // Update modal button if open
     const modalFavBtn = document.getElementById('btnDetailFav');
-    const isFavNow = favoriteIds.includes(imageId);
+    const isFavNow = favoriteIds.includes(finalId);
     modalFavBtn.classList.toggle('active', isFavNow);
     modalFavBtn.querySelector('span').innerText = isFavNow ? '즐겨찾기 해제' : '즐겨찾기 추가';
+    modalFavBtn.dataset.id = finalId;
   } catch (err) {
     console.error('Error toggling favorite:', err);
   }
@@ -942,28 +1107,22 @@ function handleImageSelection(file) {
   reader.readAsDataURL(file);
 }
 
-// Image analysis using Canvas API
-function analyzeImageColors(imgElement) {
+// Reusable image analysis helper using Canvas API
+function getColorsFromImageElement(imgElement) {
   const canvas = document.getElementById('analysisCanvas');
   const ctx = canvas.getContext('2d');
 
-  // Resize canvas to a standard smaller size for speedy color distribution analysis
   const targetSize = 100;
   canvas.width = targetSize;
   canvas.height = targetSize;
 
-  // Draw image onto canvas
   ctx.drawImage(imgElement, 0, 0, targetSize, targetSize);
 
-  // Read pixel data
   const imgData = ctx.getImageData(0, 0, targetSize, targetSize);
   const pixels = imgData.data;
   
-  // Count HSL ranges
   const counts = { Red: 0, Orange: 0, Yellow: 0, Green: 0, Blue: 0, Purple: 0, Neutral: 0 };
   let totalPixels = 0;
-
-  // Track dominant RGB code
   let rSum = 0, gSum = 0, bSum = 0;
 
   for (let i = 0; i < pixels.length; i += 4) {
@@ -984,34 +1143,40 @@ function analyzeImageColors(imgElement) {
     counts[category]++;
   }
 
-  // Calculate percentages
   const percentages = {};
   let classifiedTotal = 0;
   
   HSL_GROUPS.forEach(g => {
-    const pct = Math.round((counts[g.name] || 0) / totalPixels * 100);
+    const pct = totalPixels > 0 ? Math.round((counts[g.name] || 0) / totalPixels * 100) : 0;
     percentages[g.name] = pct;
     classifiedTotal += pct;
   });
 
-  // Calculate Average color as Dominant
-  const avgR = Math.round(rSum / totalPixels);
-  const avgG = Math.round(gSum / totalPixels);
-  const avgB = Math.round(bSum / totalPixels);
+  const avgR = totalPixels > 0 ? Math.round(rSum / totalPixels) : 0;
+  const avgG = totalPixels > 0 ? Math.round(gSum / totalPixels) : 0;
+  const avgB = totalPixels > 0 ? Math.round(bSum / totalPixels) : 0;
   
   const toHex = x => {
     const hex = x.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
   };
-  analyzedDominantHex = `#${toHex(avgR)}${toHex(avgG)}${toHex(avgB)}`.toUpperCase();
-  analyzedColorData = percentages;
+  const dominantColor = `#${toHex(avgR)}${toHex(avgG)}${toHex(avgB)}`.toUpperCase();
+
+  return { colors: percentages, dominantColor };
+}
+
+// Image analysis using Canvas API
+function analyzeImageColors(imgElement) {
+  const { colors, dominantColor } = getColorsFromImageElement(imgElement);
+  analyzedDominantHex = dominantColor;
+  analyzedColorData = colors;
 
   // Render dynamic bar chart preview
   const chartEl = document.getElementById('analysisBarChart');
   chartEl.innerHTML = '';
   
   HSL_GROUPS.forEach(g => {
-    const pct = percentages[g.name] || 0;
+    const pct = colors[g.name] || 0;
     if (pct > 0) {
       const seg = document.createElement('div');
       seg.className = 'chart-segment';
@@ -1023,6 +1188,10 @@ function analyzeImageColors(imgElement) {
   });
 
   // Handle neutral
+  let classifiedTotal = 0;
+  HSL_GROUPS.forEach(g => {
+    classifiedTotal += (colors[g.name] || 0);
+  });
   const neutralPct = Math.max(0, 100 - classifiedTotal);
   if (neutralPct > 0) {
     const seg = document.createElement('div');
