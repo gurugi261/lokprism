@@ -56,10 +56,16 @@ function httpsGet(url, headers = {}) {
       headers: headers
     };
 
-    https.get(options, (res) => {
+    const protocol = parsedUrl.protocol === 'https:' ? https : http;
+
+    protocol.get(options, (res) => {
       // Follow redirects
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return httpsGet(res.headers.location, headers).then(resolve).catch(reject);
+        let nextUrl = res.headers.location;
+        if (!nextUrl.startsWith('http://') && !nextUrl.startsWith('https://')) {
+          nextUrl = new URL(nextUrl, url).href;
+        }
+        return httpsGet(nextUrl, headers).then(resolve).catch(reject);
       }
 
       let data = '';
@@ -276,32 +282,42 @@ app.get('/api/proxy-image', async (req, res) => {
     return res.status(400).json({ error: 'Missing url parameter' });
   }
 
-  try {
-    const parsedUrl = new URL(imageUrl);
-    const protocol = parsedUrl.protocol === 'https:' ? https : http;
+  function fetchWithRedirect(targetUrl, depth = 0) {
+    if (depth > 5) {
+      return res.status(500).json({ error: 'Too many redirects' });
+    }
 
-    const proxyReq = protocol.get(imageUrl, (imgRes) => {
-      // Follow redirects
-      if (imgRes.statusCode >= 300 && imgRes.statusCode < 400 && imgRes.headers.location) {
-        protocol.get(imgRes.headers.location, (redirectRes) => {
-          res.set('Content-Type', redirectRes.headers['content-type'] || 'image/jpeg');
-          res.set('Cache-Control', 'public, max-age=86400');
-          redirectRes.pipe(res);
-        }).on('error', () => res.status(500).end());
-        return;
-      }
+    try {
+      const parsedUrl = new URL(targetUrl);
+      const protocol = parsedUrl.protocol === 'https:' ? https : http;
 
-      res.set('Content-Type', imgRes.headers['content-type'] || 'image/jpeg');
-      res.set('Cache-Control', 'public, max-age=86400');
-      imgRes.pipe(res);
-    });
+      const proxyReq = protocol.get(targetUrl, (imgRes) => {
+        // Follow redirects
+        if (imgRes.statusCode >= 300 && imgRes.statusCode < 400 && imgRes.headers.location) {
+          let nextUrl = imgRes.headers.location;
+          if (!nextUrl.startsWith('http://') && !nextUrl.startsWith('https://')) {
+            nextUrl = new URL(nextUrl, targetUrl).href;
+          }
+          fetchWithRedirect(nextUrl, depth + 1);
+          return;
+        }
 
-    proxyReq.on('error', () => {
-      res.status(500).json({ error: '이미지 프록시 실패' });
-    });
-  } catch (err) {
-    res.status(500).json({ error: '잘못된 이미지 URL' });
+        res.set('Content-Type', imgRes.headers['content-type'] || 'image/jpeg');
+        res.set('Cache-Control', 'public, max-age=86400');
+        imgRes.pipe(res);
+      });
+
+      proxyReq.on('error', (err) => {
+        console.error('Image proxy request error:', err.message);
+        res.status(500).json({ error: '이미지 프록시 실패' });
+      });
+    } catch (err) {
+      console.error('Image proxy URL parse error:', err.message);
+      res.status(500).json({ error: '잘못된 이미지 URL' });
+    }
   }
+
+  fetchWithRedirect(imageUrl);
 });
 
 // ===========================================

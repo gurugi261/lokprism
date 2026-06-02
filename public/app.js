@@ -232,7 +232,11 @@ function setupEventListeners() {
 
     // Reset presets selection unless it matches
     document.querySelectorAll('.preset-btn').forEach(btn => {
-      if (parseInt(btn.dataset.hue) === selectedHue) {
+      const bHue = parseInt(btn.dataset.hue);
+      const bSat = btn.dataset.sat !== undefined ? parseInt(btn.dataset.sat) : 100;
+      const bLight = btn.dataset.light !== undefined ? parseInt(btn.dataset.light) : 50;
+
+      if (bHue === selectedHue && bSat === selectedSat && bLight === selectedLight) {
         btn.classList.add('active');
       } else {
         btn.classList.remove('active');
@@ -243,14 +247,20 @@ function setupEventListeners() {
   slideHue.addEventListener('input', updateColorFromSliders);
   slideSat.addEventListener('input', updateColorFromSliders);
   slideLight.addEventListener('input', updateColorFromSliders);
+  document.getElementById('chkApplyBrightness').addEventListener('change', () => {
+    renderGallery();
+  });
 
   // Preset Buttons
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const hue = parseInt(e.target.dataset.hue);
+      const sat = e.target.dataset.sat !== undefined ? parseInt(e.target.dataset.sat) : 100;
+      const light = e.target.dataset.light !== undefined ? parseInt(e.target.dataset.light) : 50;
+
       slideHue.value = hue;
-      slideSat.value = 100;
-      slideLight.value = 50;
+      slideSat.value = sat;
+      slideLight.value = light;
       updateColorFromSliders();
     });
   });
@@ -754,17 +764,17 @@ function restoreSearchFromHistory(historyItem) {
 // Calculate similarity of an image colors to selected color filters
 function calculateSimilarity(image) {
   if (currentMode === 'single') {
-    // Similarity is based on the selected Hue Group percentage in the image
-    let selectedGroup = HSL_GROUPS[0].name;
-    for (const group of HSL_GROUPS) {
-      for (const r of group.range) {
-        if (selectedHue >= r[0] && selectedHue <= r[1]) {
-          selectedGroup = group.name;
-        }
-      }
-    }
-    // Return proportion directly (0-100)
-    return image.colors[selectedGroup] || 0;
+    const selectedRgb = hslToRgb(selectedHue, selectedSat, selectedLight);
+    const imgRgb = hexToRgb(image.dominantColor) || { r: 128, g: 128, b: 128 };
+
+    const rDiff = selectedRgb.r - imgRgb.r;
+    const gDiff = selectedRgb.g - imgRgb.g;
+    const bDiff = selectedRgb.b - imgRgb.b;
+
+    const distance = Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+    const maxDistance = Math.sqrt(255 * 255 * 3); // 441.67
+
+    return Math.round(100 - (distance / maxDistance) * 100);
   } else {
     // Multi-color similarity using Euclidean Distance
     // Compare selected weights to image percentages
@@ -853,7 +863,7 @@ function renderGallery() {
 
     card.innerHTML = `
       <div class="img-wrapper">
-        <img src="${img.url}" alt="${img.title}" loading="lazy">
+        <img src="${img.url.startsWith('data:') ? img.url : `/api/proxy-image?url=${encodeURIComponent(img.url)}`}" alt="${img.title}" loading="lazy" onerror="this.onerror=null; this.src='https://picsum.photos/600/400?random=' + Math.floor(Math.random()*1000);">
         <div class="card-overlay-top">
           <span class="match-badge">${img.similarity}% Match</span>
           <button class="btn-card-fav ${isFav ? 'active' : ''}" data-id="${img.id}">
@@ -960,7 +970,12 @@ async function toggleFavorite(imageId) {
 function openDetailModal(image) {
   const modal = document.getElementById('detailModal');
   
-  document.getElementById('detailImage').src = image.url;
+  const detailImg = document.getElementById('detailImage');
+  detailImg.src = image.url.startsWith('data:') ? image.url : `/api/proxy-image?url=${encodeURIComponent(image.url)}`;
+  detailImg.onerror = function() {
+    this.onerror = null;
+    this.src = 'https://picsum.photos/800/600?random=' + Math.floor(Math.random()*1000);
+  };
   document.getElementById('detailTitle').innerText = image.title;
   document.getElementById('detailDominantHex').innerText = image.dominantColor;
   document.getElementById('detailDominantTag').style.setProperty('--dom-color', image.dominantColor);

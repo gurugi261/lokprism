@@ -118,6 +118,8 @@
             <button class="preset-btn" data-hue="120" data-name="초록" style="--preset-color: #34c759;"></button>
             <button class="preset-btn" data-hue="210" data-name="파랑" style="--preset-color: #007aff;"></button>
             <button class="preset-btn" data-hue="280" data-name="보라" style="--preset-color: #af52de;"></button>
+            <button class="preset-btn" data-hue="0" data-sat="0" data-light="0" data-name="검정" style="--preset-color: #000000;"></button>
+            <button class="preset-btn" data-hue="0" data-sat="0" data-light="100" data-name="흰색" style="--preset-color: #ffffff;"></button>
           </div>
 
           <!-- Color Custom Picker Controls -->
@@ -155,6 +157,15 @@
                 <span id="lblLight">59%</span>
               </div>
               <input type="range" id="slideLight" min="0" max="100" value="59">
+            </div>
+
+            <!-- Apply Brightness Checkbox -->
+            <div class="setting-group checkbox-container">
+              <label class="checkbox-label">
+                <input type="checkbox" id="chkApplyBrightness">
+                <span class="checkbox-custom"></span>
+                <span class="label-text">밝기 반영 필터링 활성화</span>
+              </label>
             </div>
           </div>
 
