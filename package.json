@@ -1,5 +1,5 @@
 {
-  "name": "color-image-search",
+  "name": "reprism",
   "version": "1.0.0",
   "description": "Color-based Image Search System",
   "main": "server.js",
