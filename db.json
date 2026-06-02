@@ -2804,6 +2804,13 @@
   "favorites": [],
   "history": [
     {
+      "id": 1780383967462,
+      "colorText": "빨강색 + 빨강 계열",
+      "colorValue": "#FFFFFF",
+      "mode": "single",
+      "timestamp": "2026-06-02T07:06:07.462Z"
+    },
+    {
       "id": 1779769208098,
       "colorText": "초록색 파랑색 + 초록 30%, 파랑 30%",
       "colorValue": "#26AB6B_30|#6BB5FF_30",

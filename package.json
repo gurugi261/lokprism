@@ -1,5 +1,5 @@
 {
-  "name": "reprism",
+  "name": "lokprism",
   "version": "1.0.0",
   "description": "Color-based Image Search System",
   "main": "server.js",
