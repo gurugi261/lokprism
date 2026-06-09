@@ -139,7 +139,7 @@ function scrapeGoogleImages(query, color = '') {
           }
 
           const images = [];
-          const maxResults = 24;
+          const maxResults = 100;
           for (let i = 0; i < Math.max(imgUrls.length, tbnUrls.length); i++) {
             if (images.length >= maxResults) break;
             const originalUrl = imgUrls[i] || tbnUrls[i];
@@ -167,7 +167,7 @@ function scrapeGoogleImages(query, color = '') {
 async function getSearchFallback() {
   try {
     const pageNum = Math.floor(Math.random() * 20) + 1;
-    const picsumUrl = `https://picsum.photos/v2/list?page=${pageNum}&limit=24`;
+    const picsumUrl = `https://picsum.photos/v2/list?page=${pageNum}&limit=100`;
     const result = await httpsGet(picsumUrl);
     const photos = JSON.parse(result.data);
 
@@ -182,7 +182,7 @@ async function getSearchFallback() {
   } catch (err) {
     console.error('Picsum fallback fetch error:', err);
     const db = readDB();
-    return db.images.slice(0, 24);
+    return db.images;
   }
 }
 

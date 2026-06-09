@@ -242,6 +242,8 @@ function setupEventListeners() {
         btn.classList.remove('active');
       }
     });
+
+    renderGallery();
   };
 
   slideHue.addEventListener('input', updateColorFromSliders);
@@ -470,6 +472,7 @@ function renderMultiColors() {
   });
 
   document.getElementById('lblTotalWeight').innerText = `${totalWeight}%`;
+  renderGallery();
 }
 
 // Trigger Color Search
@@ -588,6 +591,7 @@ async function triggerSearch() {
     
     // Save history
     await saveHistory(query);
+    document.getElementById('sortSelect').value = 'match';
     renderGallery();
   } catch (err) {
     console.error('Web search error:', err);
