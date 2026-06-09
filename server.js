@@ -139,7 +139,7 @@ function scrapeGoogleImages(query, color = '') {
           }
 
           const images = [];
-          const maxResults = 100;
+          const maxResults = 50;
           for (let i = 0; i < Math.max(imgUrls.length, tbnUrls.length); i++) {
             if (images.length >= maxResults) break;
             const originalUrl = imgUrls[i] || tbnUrls[i];
@@ -167,7 +167,7 @@ function scrapeGoogleImages(query, color = '') {
 async function getSearchFallback() {
   try {
     const pageNum = Math.floor(Math.random() * 20) + 1;
-    const picsumUrl = `https://picsum.photos/v2/list?page=${pageNum}&limit=100`;
+    const picsumUrl = `https://picsum.photos/v2/list?page=${pageNum}&limit=50`;
     const result = await httpsGet(picsumUrl);
     const photos = JSON.parse(result.data);
 
@@ -178,11 +178,11 @@ async function getSearchFallback() {
       thumbnailUrl: `https://picsum.photos/id/${p.id}/300/200`,
       photographer: p.author,
       source: 'picsum-fallback'
-    }));
+    })).slice(0, 50);
   } catch (err) {
     console.error('Picsum fallback fetch error:', err);
     const db = readDB();
-    return db.images;
+    return db.images.slice(0, 50);
   }
 }
 
@@ -203,11 +203,11 @@ app.get('/api/search-web', async (req, res) => {
       if (!images || images.length === 0) {
         images = await getSearchFallback();
       }
-      return res.json({ images, source: 'google-scrape', hasApiKey: false });
+      return res.json({ images: images.slice(0, 50), source: 'google-scrape', hasApiKey: false });
     } catch (err) {
       console.error('Google Scraper fallback error:', err);
       const images = await getSearchFallback();
-      return res.json({ images, source: 'picsum-fallback', hasApiKey: false });
+      return res.json({ images: images.slice(0, 50), source: 'picsum-fallback', hasApiKey: false });
     }
   }
 
@@ -235,7 +235,7 @@ app.get('/api/search-web', async (req, res) => {
       if (!images || images.length === 0) {
         images = await getSearchFallback();
       }
-      return res.json({ images, source: 'google-scrape', hasApiKey: false });
+      return res.json({ images: images.slice(0, 50), source: 'google-scrape', hasApiKey: false });
     }
 
     const data = JSON.parse(result.data);
@@ -252,7 +252,7 @@ app.get('/api/search-web', async (req, res) => {
     }
 
     return res.json({
-      images,
+      images: images.slice(0, 50),
       source: 'google',
       hasApiKey: true,
       totalResults: parseInt(data.searchInformation?.totalResults || '0'),
@@ -265,10 +265,10 @@ app.get('/api/search-web', async (req, res) => {
       if (!images || images.length === 0) {
         images = await getSearchFallback();
       }
-      return res.json({ images, source: 'google-scrape', hasApiKey: false });
+      return res.json({ images: images.slice(0, 50), source: 'google-scrape', hasApiKey: false });
     } catch (scrapeErr) {
       const images = await getSearchFallback();
-      return res.json({ images, source: 'picsum-fallback', hasApiKey: false });
+      return res.json({ images: images.slice(0, 50), source: 'picsum-fallback', hasApiKey: false });
     }
   }
 });
@@ -335,6 +335,21 @@ app.get('/api/config-status', (req, res) => {
 app.get('/api/images', (req, res) => {
   const db = readDB();
   res.json(db.images);
+});
+
+// API: Delete an image
+app.delete('/api/images/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const db = readDB();
+  const initialLength = db.images.length;
+  db.images = db.images.filter(img => img.id !== id);
+  db.favorites = db.favorites.filter(favId => favId !== id);
+  
+  if (db.images.length === initialLength) {
+    return res.status(404).json({ error: '이미지를 찾을 수 없습니다.' });
+  }
+  writeDB(db);
+  res.json({ message: '이미지가 성공적으로 삭제되었습니다.', id });
 });
 
 // API: Add/Save a new image

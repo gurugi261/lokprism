@@ -242,8 +242,6 @@ function setupEventListeners() {
         btn.classList.remove('active');
       }
     });
-
-    renderGallery();
   };
 
   slideHue.addEventListener('input', updateColorFromSliders);
@@ -472,7 +470,6 @@ function renderMultiColors() {
   });
 
   document.getElementById('lblTotalWeight').innerText = `${totalWeight}%`;
-  renderGallery();
 }
 
 // Trigger Color Search
@@ -548,43 +545,45 @@ async function triggerSearch() {
     const analyzedImages = [];
     let completedCount = 0;
 
-    for (const img of searchImages) {
-      try {
-        const imgEl = new Image();
-        imgEl.crossOrigin = 'Anonymous';
-        
-        await new Promise((resolve) => {
-          imgEl.onload = () => {
-            try {
-              const { colors, dominantColor } = getColorsFromImageElement(imgEl);
-              analyzedImages.push({
-                id: img.id,
-                title: img.title || `${query} 이미지`,
-                url: img.url,
-                thumbnailUrl: img.thumbnailUrl,
-                colors,
-                dominantColor,
-                source: img.source
-              });
-            } catch (err) {
-              console.error('Failed to parse colors of search image:', err);
-            }
-            resolve();
-          };
-          imgEl.onerror = () => {
-            resolve(); // proceed even if one image fails to load
-          };
-          imgEl.src = `/api/proxy-image?url=${encodeURIComponent(img.url)}`;
-        });
-      } catch (err) {
-        console.error('Failed to process search result image:', img.url, err);
-      }
-
-      completedCount++;
+    const updateProgress = () => {
       const percent = Math.round((completedCount / searchImages.length) * 100);
       progressBar.style.width = `${percent}%`;
       progressText.innerText = `색상 분석 중: ${completedCount}/${searchImages.length}`;
-    }
+    };
+
+    const promises = searchImages.map(img => {
+      return new Promise((resolve) => {
+        const imgEl = new Image();
+        imgEl.crossOrigin = 'Anonymous';
+        imgEl.onload = () => {
+          try {
+            const { colors, dominantColor } = getColorsFromImageElement(imgEl);
+            analyzedImages.push({
+              id: img.id,
+              title: img.title || `${query} 이미지`,
+              url: img.url,
+              thumbnailUrl: img.thumbnailUrl,
+              colors,
+              dominantColor,
+              source: img.source
+            });
+          } catch (err) {
+            console.error('Failed to parse colors of search image:', err);
+          }
+          completedCount++;
+          updateProgress();
+          resolve();
+        };
+        imgEl.onerror = () => {
+          completedCount++;
+          updateProgress();
+          resolve();
+        };
+        imgEl.src = `/api/proxy-image?url=${encodeURIComponent(img.url)}`;
+      });
+    });
+
+    await Promise.all(promises);
 
     webSearchResults = analyzedImages;
     statusBar.classList.add('hidden');
@@ -861,15 +860,24 @@ function renderGallery() {
     });
 
     const isFav = favoriteIds.includes(img.id);
+    const isLocal = allImages.some(localImg => localImg.id === img.id);
+    const deleteBtnHtml = isLocal ? `
+      <button class="btn-card-delete" data-id="${img.id}" title="이미지 삭제">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    ` : '';
 
     card.innerHTML = `
       <div class="img-wrapper">
         <img src="${img.url.startsWith('data:') ? img.url : `/api/proxy-image?url=${encodeURIComponent(img.url)}`}" alt="${img.title}" loading="lazy" onerror="this.onerror=null; this.src='https://picsum.photos/600/400?random=' + Math.floor(Math.random()*1000);">
         <div class="card-overlay-top">
           <span class="match-badge">${img.similarity}% Match</span>
-          <button class="btn-card-fav ${isFav ? 'active' : ''}" data-id="${img.id}">
-            <i class="fa-solid fa-heart"></i>
-          </button>
+          <div class="card-overlay-actions" style="display: flex; gap: 8px;">
+            ${deleteBtnHtml}
+            <button class="btn-card-fav ${isFav ? 'active' : ''}" data-id="${img.id}">
+              <i class="fa-solid fa-heart"></i>
+            </button>
+          </div>
         </div>
       </div>
       <div class="card-info">
@@ -891,6 +899,15 @@ function renderGallery() {
       toggleFavorite(imgId);
     });
 
+    // Delete click
+    if (isLocal) {
+      card.querySelector('.btn-card-delete').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const imgId = parseInt(e.currentTarget.dataset.id);
+        deleteImage(imgId);
+      });
+    }
+
     // Detail view click
     card.addEventListener('click', () => {
       openDetailModal(img);
@@ -898,6 +915,31 @@ function renderGallery() {
 
     grid.appendChild(card);
   });
+}
+
+// Delete local image
+async function deleteImage(imageId) {
+  if (!confirm('정말 이 이미지를 삭제하시겠습니까?')) return;
+  try {
+    const res = await fetch(`/api/images/${imageId}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) {
+      allImages = allImages.filter(img => img.id !== imageId);
+      favoriteIds = favoriteIds.filter(id => id !== imageId);
+      if (webSearchResults) {
+        webSearchResults = webSearchResults.filter(img => img.id !== imageId);
+      }
+      renderGallery();
+      alert('성공적으로 삭제되었습니다.');
+    } else {
+      const err = await res.json();
+      alert(`삭제 실패: ${err.error}`);
+    }
+  } catch (err) {
+    console.error('Error deleting image:', err);
+    alert('서버 오류로 이미지를 삭제할 수 없습니다.');
+  }
 }
 
 // Toggle favorite state of an image (auto-saves web search results to local database)
@@ -1139,7 +1181,7 @@ function getColorsFromImageElement(imgElement) {
   const canvas = document.getElementById('analysisCanvas');
   const ctx = canvas.getContext('2d');
 
-  const targetSize = 100;
+  const targetSize = 50;
   canvas.width = targetSize;
   canvas.height = targetSize;
 
