@@ -247,9 +247,6 @@ function setupEventListeners() {
   slideHue.addEventListener('input', updateColorFromSliders);
   slideSat.addEventListener('input', updateColorFromSliders);
   slideLight.addEventListener('input', updateColorFromSliders);
-  document.getElementById('chkApplyBrightness').addEventListener('change', () => {
-    renderGallery();
-  });
 
   // Preset Buttons
   document.querySelectorAll('.preset-btn').forEach(btn => {
